@@ -9,18 +9,18 @@ This is a Model Context Protocol (MCP) stdio server that integrates with the Clo
 Status
 
 - Initial scaffolding with a minimal REST client and the following tools:
-  - Read tools (namespace `cm.read.*`)
-    - cm.read.get_api_info
-    - cm.read.list_clusters
-    - cm.read.list_services
-    - cm.read.list_commands
-    - cm.read.get_command
-    - cm.read.list_parcels (supports `view`; `limit`/`offset` client-side)
-    - cm.read.get_parcels_usage (no paging supported)
-  - Write tools (namespace `cm.write.*`)
-    - cm.write.service_command (start/stop/restart) — requires `confirm=true` and `ALLOW_WRITES=true`
-    - cm.write.inspect_hosts — triggers `/cm/commands/inspectHosts`; requires `confirm=true` and `ALLOW_WRITES=true`
-  - Tools are only exposed under their namespaced forms.
+  - Read tools
+    - cm_read_get_api_info
+    - cm_read_list_clusters
+    - cm_read_list_services
+    - cm_read_list_commands
+    - cm_read_get_command
+    - cm_read_list_parcels (supports `view`; `limit`/`offset` client-side)
+    - cm_read_get_parcels_usage (no paging supported)
+  - Write tools
+    - cm_write_service_command (start/stop/restart) — requires `confirm=true` and `ALLOW_WRITES=true`
+    - cm_write_inspect_hosts — triggers `/cm/commands/inspectHosts`; requires `confirm=true` and `ALLOW_WRITES=true`
+  - Tool names avoid dots for broad MCP client compatibility; legacy dotted names still work if called directly.
 
 Prerequisites
 

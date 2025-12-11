@@ -107,7 +107,7 @@ async function main() {
 
   const readTools: ToolDef[] = [
     {
-      name: "cm.read.get_api_info",
+      name: "cm_read_get_api_info",
       description: "Get Cloudera Manager API version and base URL",
       handler: async () => {
         const c = getClient();
@@ -116,7 +116,7 @@ async function main() {
       },
     },
     {
-      name: "cm.read.list_clusters",
+      name: "cm_read_list_clusters",
       description: "List clusters (summary or full view)",
       inputSchema: ListClustersInput,
       handler: async ({ input }) => {
@@ -127,7 +127,7 @@ async function main() {
       },
     },
     {
-      name: "cm.read.list_services",
+      name: "cm_read_list_services",
       description: "List services in a cluster",
       inputSchema: ListServicesInput,
       handler: async ({ input }) => {
@@ -138,7 +138,7 @@ async function main() {
       },
     },
     {
-      name: "cm.read.list_commands",
+      name: "cm_read_list_commands",
       description: "List recent commands for a cluster or service",
       inputSchema: ListCommandsInput,
       handler: async ({ input }) => {
@@ -152,7 +152,7 @@ async function main() {
       },
     },
     {
-      name: "cm.read.get_command",
+      name: "cm_read_get_command",
       description: "Get command status by id",
       inputSchema: GetCommandInput,
       handler: async ({ input }) => {
@@ -163,7 +163,7 @@ async function main() {
       },
     },
     {
-      name: "cm.read.list_parcels",
+      name: "cm_read_list_parcels",
       description: "List parcels that a cluster has access to (supports view; limit/offset are applied client-side)",
       inputSchema: ParcelsInput,
       handler: async ({ input }) => {
@@ -189,7 +189,7 @@ async function main() {
       },
     },
     {
-      name: "cm.read.get_parcels_usage",
+      name: "cm_read_get_parcels_usage",
       description: "Get parcel usage details for a cluster (no paging supported by CM)",
       inputSchema: ParcelsInput,
       handler: async ({ input }) => {
@@ -203,7 +203,7 @@ async function main() {
 
   const writeTools: ToolDef[] = [
     {
-      name: "cm.write.service_command",
+      name: "cm_write_service_command",
       description: "Run start/stop/restart on a service (requires confirm and ALLOW_WRITES=true)",
       inputSchema: ServiceCommandInput,
       handler: async ({ input }) => {
@@ -220,7 +220,7 @@ async function main() {
       },
     },
     {
-      name: "cm.write.inspect_hosts",
+      name: "cm_write_inspect_hosts",
       description: "Run Cloudera Manager host inspector (requires confirm and ALLOW_WRITES=true)",
       inputSchema: InspectHostsInput,
       handler: async ({ input }) => {
@@ -245,13 +245,34 @@ async function main() {
 
   const toolMap = new Map<string, ToolDef>(allTools.map((t) => [t.name, t]));
 
+  // Hidden compatibility mapping for legacy dotted names (not advertised via tools/list).
+  const legacyNameMap: Record<string, string> = {
+    "cm.read.get_api_info": "cm_read_get_api_info",
+    "cm.read.list_clusters": "cm_read_list_clusters",
+    "cm.read.list_services": "cm_read_list_services",
+    "cm.read.list_commands": "cm_read_list_commands",
+    "cm.read.get_command": "cm_read_get_command",
+    "cm.read.list_parcels": "cm_read_list_parcels",
+    "cm.read.get_parcels_usage": "cm_read_get_parcels_usage",
+    "cm.write.service_command": "cm_write_service_command",
+    "cm.write.inspect_hosts": "cm_write_inspect_hosts",
+  };
+  for (const [legacy, current] of Object.entries(legacyNameMap)) {
+    const def = toolMap.get(current);
+    if (def) toolMap.set(legacy, def);
+  }
+
   // MCP tools/list handler
   server.setRequestHandler(ListToolsRequestSchema, async () => {
     return {
       tools: allTools.map((t) => ({
         name: t.name,
         description: t.description,
-        inputSchema: t.inputSchema,
+        inputSchema: t.inputSchema ?? {
+          type: "object",
+          properties: {},
+          additionalProperties: false,
+        },
       })),
     };
   });
