@@ -22,8 +22,8 @@ Tool names are dot‑free (`cm_read_*`, `cm_write_*`) for broad MCP client compa
 
 **Write tools**
 
-- `cm_write_service_command` (start/stop/restart) — requires `ALLOW_WRITES=true` and per‑call `confirm=true`
-- `cm_write_inspect_hosts` — triggers `/cm/commands/inspectHosts`; requires `ALLOW_WRITES=true` and per‑call `confirm=true`
+- `cm_write_service_command` (start/stop/restart) — requires `ALLOW_WRITES=true`
+- `cm_write_inspect_hosts` — triggers `/cm/commands/inspectHosts`; requires `ALLOW_WRITES=true`
 
 ## Prerequisites
 
@@ -80,8 +80,6 @@ codex mcp add cloudera-manager-mcp \
   --env ALLOW_WRITES=true \
   -- node dist/server.js
 ```
-
-The above enables write tools. Write tools still require `confirm=true` on each call.
 
 ## Notes
 

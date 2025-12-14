@@ -46,7 +46,6 @@ const ServiceCommandInput: any = {
     cluster: { type: "string" },
     service: { type: "string" },
     action: { type: "string", enum: ["start", "stop", "restart"] },
-    confirm: { type: "boolean", default: false },
   },
   additionalProperties: false,
 };
@@ -55,7 +54,6 @@ const InspectHostsInput: any = {
   type: "object",
   properties: {
     hostIds: { type: "array", items: { type: "string" }, minItems: 1 },
-    confirm: { type: "boolean", default: false },
   },
   additionalProperties: false,
 };
@@ -204,14 +202,11 @@ async function main() {
   const writeTools: ToolDef[] = [
     {
       name: "cm_write_service_command",
-      description: "Run start/stop/restart on a service (requires confirm and ALLOW_WRITES=true)",
+      description: "Run start/stop/restart on a service (requires ALLOW_WRITES=true)",
       inputSchema: ServiceCommandInput,
       handler: async ({ input }) => {
         if (!allowWrites) {
           return { content: [{ type: "text", text: "Writes disabled. Set ALLOW_WRITES=true to enable." }] };
-        }
-        if (!input.confirm) {
-          return { content: [{ type: "text", text: "Refusing to run without confirm=true" }] };
         }
         const c = getClient();
         await c.resolveVersion();
@@ -221,14 +216,11 @@ async function main() {
     },
     {
       name: "cm_write_inspect_hosts",
-      description: "Run Cloudera Manager host inspector (requires confirm and ALLOW_WRITES=true)",
+      description: "Run Cloudera Manager host inspector (requires ALLOW_WRITES=true)",
       inputSchema: InspectHostsInput,
       handler: async ({ input }) => {
         if (!allowWrites) {
           return { content: [{ type: "text", text: "Writes disabled. Set ALLOW_WRITES=true to enable." }] };
-        }
-        if (!input?.confirm) {
-          return { content: [{ type: "text", text: "Refusing to run without confirm=true" }] };
         }
         const c = getClient();
         await c.resolveVersion();
