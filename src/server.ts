@@ -114,6 +114,16 @@ async function main() {
       },
     },
     {
+      name: "cm_read_get_deployment",
+      description: "Export Cloudera Manager deployment configuration (GET /cm/deployment)",
+      handler: async () => {
+        const c = getClient();
+        await c.resolveVersion();
+        const data = await c.getDeployment();
+        return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
+      },
+    },
+    {
       name: "cm_read_list_clusters",
       description: "List clusters (summary or full view)",
       inputSchema: ListClustersInput,
@@ -240,6 +250,7 @@ async function main() {
   // Hidden compatibility mapping for legacy dotted names (not advertised via tools/list).
   const legacyNameMap: Record<string, string> = {
     "cm.read.get_api_info": "cm_read_get_api_info",
+    "cm.read.get_deployment": "cm_read_get_deployment",
     "cm.read.list_clusters": "cm_read_list_clusters",
     "cm.read.list_services": "cm_read_list_services",
     "cm.read.list_commands": "cm_read_list_commands",

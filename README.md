@@ -13,6 +13,7 @@ Tool names are dot‑free (`cm_read_*`, `cm_write_*`) for broad MCP client compa
 **Read tools**
 
 - `cm_read_get_api_info`
+- `cm_read_get_deployment`
 - `cm_read_list_clusters`
 - `cm_read_list_services`
 - `cm_read_list_commands`

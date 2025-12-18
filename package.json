@@ -11,6 +11,8 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "dev": "ts-node src/server.ts",
+    "test:unit": "node --test --loader ts-node/esm test/config.test.ts test/cmClient.test.ts",
+    "test": "npm run test:unit",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "smoke:read": "ts-node src/scripts/smokeRead.ts"
   },

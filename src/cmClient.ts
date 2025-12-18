@@ -150,6 +150,12 @@ export class ClouderaManagerClient {
     return res.json();
   }
 
+  async getDeployment(): Promise<any> {
+    const res = await this.request(`/cm/deployment`, { method: "GET" });
+    await this.assertOk(res, "getDeployment");
+    return res.json();
+  }
+
   private async assertOk(res: Response, op: string): Promise<void> {
     if (res.ok) return;
     let body: any;
