@@ -3,6 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { loadConfigFromEnv } from "./config.js";
 import { ClouderaManagerClient } from "./cmClient.js";
+import { analyzeSmonLogs } from "./smonAnalyzer.js";
 
 // Tool input schemas (JSON Schema)
 const ViewEnum = {
@@ -74,6 +75,26 @@ const ParcelsInput: any = {
     limit: { type: "number", minimum: 1, maximum: 500 },
     offset: { type: "number", minimum: 0 },
   },
+  additionalProperties: false,
+};
+
+const AnalyzeSmonInput: any = {
+  type: "object",
+  properties: {
+    logText: { type: "string" },
+    logPrefix: { type: "string" },
+    fromTime: { type: "string" },
+    toTime: { type: "string" },
+    managedHosts: { type: "number" },
+    maxBytes: { type: "number" },
+    tailLines: { type: "number" },
+  },
+  additionalProperties: false,
+};
+
+const ShowConfigInput: any = {
+  type: "object",
+  properties: {},
   additionalProperties: false,
 };
 
@@ -207,6 +228,31 @@ async function main() {
         return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
       },
     },
+    {
+      name: "cm_read_show_config",
+      description: "Show current MCP CM config (base URL, API version cache state, SSL verify, log level, writes)",
+      inputSchema: ShowConfigInput,
+      handler: async () => {
+        try {
+          const cfg = loadConfigFromEnv();
+          return {
+            content: [{
+              type: "text",
+              text: JSON.stringify({
+                baseUrl: cfg.baseUrl,
+                apiVersionConfigured: cfg.apiVersion ?? "auto",
+                verifySsl: cfg.verifySsl,
+                requestTimeoutMs: cfg.requestTimeoutMs,
+                logLevel: cfg.logLevel,
+                allowWrites: (process.env.ALLOW_WRITES ?? "false").toLowerCase() === "true",
+              }, null, 2),
+            }],
+          };
+        } catch (err: any) {
+          return { content: [{ type: "text", text: `Show config failed: ${err?.message || err}` }], isError: true };
+        }
+      },
+    },
   ];
 
   const writeTools: ToolDef[] = [
@@ -243,6 +289,52 @@ async function main() {
   const allTools: ToolDef[] = [
     ...readTools,
     ...writeTools,
+    {
+      name: "cm_read_analyze_smon_logs",
+      description: "Analyze Service Monitor logs for common issues and recommendations",
+      inputSchema: AnalyzeSmonInput,
+      handler: async ({ input }) => {
+        if (!input?.logText && !input?.logPrefix) {
+          return {
+            content: [{ type: "text", text: "Provide either logText or logPrefix" }],
+            isError: true,
+          };
+        }
+        try {
+          const res = analyzeSmonLogs({
+            logText: input.logText,
+            logPrefix: input.logPrefix,
+            fromTime: input.fromTime,
+            toTime: input.toTime,
+            managedHosts: input.managedHosts,
+            maxBytes: input.maxBytes,
+            tailLines: input.tailLines,
+          });
+          return { content: [{ type: "text", text: JSON.stringify(res, null, 2) }] };
+        } catch (err: any) {
+          return {
+            content: [{ type: "text", text: `SMON analysis failed: ${err?.message || err}` }],
+            isError: true,
+          };
+        }
+      },
+    },
+    {
+      name: "cm_read_healthz",
+      description: "Lightweight self-test: call CM API info and return version/base URL",
+      handler: async () => {
+        try {
+          const c = getClient();
+          const info = await c.getApiInfo();
+          return { content: [{ type: "text", text: JSON.stringify(info, null, 2) }] };
+        } catch (err: any) {
+          return {
+            content: [{ type: "text", text: `Health check failed: ${err?.message || err}` }],
+            isError: true,
+          };
+        }
+      },
+    },
   ];
 
   const toolMap = new Map<string, ToolDef>(allTools.map((t) => [t.name, t]));

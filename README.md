@@ -52,6 +52,7 @@ Tool names are dot‑free (`cm_read_*`, `cm_write_*`) for broad MCP client compa
    - `CLDR_CM_PASSWORD`
    - `CLDR_CM_API_VERSION` (optional, e.g., `v49`). If not set, the server probes `/api/version` and caches it.
    - `CLDR_CM_VERIFY_SSL` (optional, default: `true`)
+   - `CLDR_CM_REQUEST_TIMEOUT_MS` (optional, default: `15000`)
    - `ALLOW_WRITES` (optional, default: `false`) — enables write tools
 
 4. Build and run:
@@ -67,6 +68,12 @@ During development:
 npm run dev
 ```
 
+Quick start with prompt (reuse or enter CM creds; password is not written to disk; optionally saves non-secret values to `.env`, then starts dev server):
+
+```bash
+./bin/run-mcp.sh
+```
+
 ## Using With Codex CLI
 
 After building, add this MCP server to Codex:
@@ -78,6 +85,7 @@ codex mcp add cloudera-manager-mcp \
   --env CLDR_CM_PASSWORD=<CM_PASSWORD> \
   --env CLDR_CM_API_VERSION=<CM_API_VERSION> \
   --env CLDR_CM_VERIFY_SSL=true \
+  --env CLDR_CM_REQUEST_TIMEOUT_MS=15000 \
   --env ALLOW_WRITES=true \
   -- node dist/server.js
 ```

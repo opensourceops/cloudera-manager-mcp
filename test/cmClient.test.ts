@@ -14,6 +14,8 @@ test("resolveVersion parses quoted version string", async () => {
       username: "user",
       password: "pass",
       verifySsl: true,
+      logLevel: "error",
+      requestTimeoutMs: 5000,
     });
 
     const v = await cm.resolveVersion();
@@ -46,6 +48,8 @@ test("listClusters builds correct URL and Basic auth header", async () => {
       password: "pass",
       apiVersion: "v54",
       verifySsl: true,
+      logLevel: "error",
+      requestTimeoutMs: 5000,
     });
 
     const clusters = await cm.listClusters("summary");
@@ -67,13 +71,15 @@ test("listServices URL-encodes cluster name", async () => {
       });
     },
     async () => {
-      const cm = new ClouderaManagerClient({
-        baseUrl: "https://cm.example.com:7183",
-        username: "user",
-        password: "pass",
-        apiVersion: "v54",
-        verifySsl: true,
-      });
+    const cm = new ClouderaManagerClient({
+      baseUrl: "https://cm.example.com:7183",
+      username: "user",
+      password: "pass",
+      apiVersion: "v54",
+      verifySsl: true,
+      logLevel: "error",
+      requestTimeoutMs: 5000,
+    });
 
       const services = await cm.listServices("Cluster 1/Prod", "summary");
       assert.deepEqual(services, { items: [] });
@@ -87,13 +93,15 @@ test("listClusters error includes response body", async () => {
       return new Response("boom", { status: 500, statusText: "Internal Server Error" });
     },
     async () => {
-      const cm = new ClouderaManagerClient({
-        baseUrl: "https://cm.example.com:7183",
-        username: "user",
-        password: "pass",
-        apiVersion: "v54",
-        verifySsl: true,
-      });
+    const cm = new ClouderaManagerClient({
+      baseUrl: "https://cm.example.com:7183",
+      username: "user",
+      password: "pass",
+      apiVersion: "v54",
+      verifySsl: true,
+      logLevel: "error",
+      requestTimeoutMs: 5000,
+    });
 
       await assert.rejects(
         () => cm.listClusters("summary"),
@@ -124,13 +132,15 @@ test("serviceCommand URL-encodes cluster and service and uses POST", async () =>
       });
     },
     async () => {
-      const cm = new ClouderaManagerClient({
-        baseUrl: "https://cm.example.com:7183",
-        username: "user",
-        password: "pass",
-        apiVersion: "v54",
-        verifySsl: true,
-      });
+    const cm = new ClouderaManagerClient({
+      baseUrl: "https://cm.example.com:7183",
+      username: "user",
+      password: "pass",
+      apiVersion: "v54",
+      verifySsl: true,
+      logLevel: "error",
+      requestTimeoutMs: 5000,
+    });
 
       const cmd = await cm.serviceCommand("Cluster 1/Prod", "HDFS: NameNode", "restart");
       assert.deepEqual(cmd, { id: 123, name: "restart" });
@@ -150,13 +160,15 @@ test("getDeployment calls /cm/deployment", async () => {
       });
     },
     async () => {
-      const cm = new ClouderaManagerClient({
-        baseUrl: "https://cm.example.com:7183",
-        username: "user",
-        password: "pass",
-        apiVersion: "v54",
-        verifySsl: true,
-      });
+    const cm = new ClouderaManagerClient({
+      baseUrl: "https://cm.example.com:7183",
+      username: "user",
+      password: "pass",
+      apiVersion: "v54",
+      verifySsl: true,
+      logLevel: "error",
+      requestTimeoutMs: 5000,
+    });
 
       const deployment = await cm.getDeployment();
       assert.deepEqual(deployment, { hello: "world" });

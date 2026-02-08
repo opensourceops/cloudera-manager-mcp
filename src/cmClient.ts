@@ -13,6 +13,14 @@ export class ClouderaManagerClient {
     }
   }
 
+  private log(level: "error" | "warn" | "info" | "debug", msg: string) {
+    const allowed: Record<string, number> = { error: 0, warn: 1, info: 2, debug: 3 };
+    if (allowed[level] <= allowed[this.cfg.logLevel]) {
+      // eslint-disable-next-line no-console
+      console.error(`[cmClient:${level}] ${msg}`);
+    }
+  }
+
   private apiBase(): string {
     const v = this.cachedVersion;
     if (!v) throw new Error("API version not resolved yet");
@@ -46,11 +54,31 @@ export class ClouderaManagerClient {
     const auth = Buffer.from(`${this.cfg.username}:${this.cfg.password}`).toString("base64");
     headers["Authorization"] = `Basic ${auth}`;
 
-    const res = await fetch(url, {
-      ...init,
-      headers,
-    } as RequestInit);
-    return res;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), this.cfg.requestTimeoutMs);
+
+    try {
+      const res = await fetch(url, {
+        ...init,
+        headers,
+        signal: controller.signal,
+      } as RequestInit);
+      if (!res.ok) {
+        this.log(
+          "warn",
+          `Fetch failed: ${res.status} ${res.statusText} url=${url} method=${init?.method ?? "GET"}`
+        );
+      }
+      return res;
+    } catch (err: any) {
+      if (err?.name === "AbortError") {
+        throw new Error(`Request timed out after ${this.cfg.requestTimeoutMs}ms: ${url}`);
+      }
+      this.log("error", `Fetch error: ${err?.message || err} url=${url}`);
+      throw err;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
   // Core methods
